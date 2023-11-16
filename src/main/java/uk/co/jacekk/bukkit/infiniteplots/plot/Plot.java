@@ -387,7 +387,7 @@ public class Plot extends BaseObject<InfinitePlots> {
 	 * Regenerates the buildable region of this plot.
 	 */
 	public void regenerate(){
-		(new FlatPlotDecorator(plugin, Material.getMaterial(plugin.config.getInt(Config.BLOCKS_GROUND)), Material.getMaterial(plugin.config.getInt(Config.BLOCKS_SURFACE)), (byte) 0, (byte) 0)).decorate(this);
+		(new FlatPlotDecorator(plugin, Material.getMaterial(plugin.config.getString(Config.BLOCKS_GROUND)), Material.getMaterial(plugin.config.getString(Config.BLOCKS_SURFACE)), (byte) 0, (byte) 0)).decorate(this);
 	}
 	
 	/**
@@ -414,10 +414,10 @@ public class Plot extends BaseObject<InfinitePlots> {
 		Block cornerThree = world.getBlockAt(x3 - 1, y, z3);
 		Block cornerFour = world.getBlockAt(x4 + 1, y, z4);
 		
-		cornerOne.setType(Material.SIGN_POST);
-		cornerTwo.setType(Material.SIGN_POST);
-		cornerThree.setType(Material.SIGN_POST);
-		cornerFour.setType(Material.SIGN_POST);
+		cornerOne.setType(Material.OAK_SIGN);
+		cornerTwo.setType(Material.OAK_SIGN);
+		cornerThree.setType(Material.OAK_SIGN);
+		cornerFour.setType(Material.OAK_SIGN);
 		
 		// north west
 		Sign signOne = (Sign) cornerOne.getState();

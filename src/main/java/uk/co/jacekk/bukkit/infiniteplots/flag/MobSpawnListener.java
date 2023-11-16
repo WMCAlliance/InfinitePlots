@@ -36,7 +36,7 @@ public class MobSpawnListener extends BaseListener<InfinitePlots>{
 		this.monsterTypes.add(EntityType.GIANT);
 		this.monsterTypes.add(EntityType.MAGMA_CUBE);
 		this.monsterTypes.add(EntityType.CREEPER);
-		this.monsterTypes.add(EntityType.PIG_ZOMBIE);
+		this.monsterTypes.add(EntityType.ZOMBIFIED_PIGLIN);
 		this.monsterTypes.add(EntityType.WITCH);
 		this.monsterTypes.add(EntityType.WITHER);
 		this.monsterTypes.add(EntityType.BLAZE);

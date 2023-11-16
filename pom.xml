@@ -3,7 +3,7 @@
 	<groupId>uk.co.jacekk.bukkit</groupId>
 	<artifactId>infiniteplots</artifactId>
 	<name>InfinitePlots</name>
-	<version>0.9-SNAPSHOT</version>
+	<version>0.10-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<url>http://dev.bukkit.org/bukkit-plugins/infiniteplots/</url>
 	
@@ -22,15 +22,9 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
-		
 		<repository>
-			<id>jacekk-repo</id>
-			<url>https://ci.jacekk.co.uk/plugin/repository/everything/</url>
-		</repository>
-		
-		<repository>
-			<id>vault-repo</id>
-			<url>http://nexus.theyeticave.net/content/repositories/pub_releases/</url>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>	
 	
@@ -43,16 +37,17 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>craftbukkit</artifactId>
-			<version>1.9-R0.1-SNAPSHOT</version>
-			<scope>compile</scope>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot</artifactId>
+			<version>1.20.2-R0.1-SNAPSHOT</version>
+			<classifier>remapped-mojang</classifier>
+			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
-			<artifactId>Vault</artifactId>
-			<version>1.5.6</version>
+			<artifactId>VaultAPI</artifactId>
+			<version>1.7</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
@@ -75,6 +70,39 @@
 		</resources>
 		
 		<plugins>
+			<plugin>
+				<groupId>net.md-5</groupId>
+				<artifactId>specialsource-maven-plugin</artifactId>
+				<version>1.2.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>remap</goal>
+						</goals>
+						<id>remap-obf</id>
+						<configuration>
+							<srgIn>org.spigotmc:minecraft-server:1.20.2-R0.1-SNAPSHOT:txt:maps-mojang</srgIn>
+							<reverse>true</reverse>
+							<remappedDependencies>org.spigotmc:spigot:1.20.2-R0.1-SNAPSHOT:jar:remapped-mojang</remappedDependencies>
+							<remappedArtifactAttached>true</remappedArtifactAttached>
+							<remappedClassifierName>remapped-obf</remappedClassifierName>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>remap</goal>
+						</goals>
+						<id>remap-spigot</id>
+						<configuration>
+							<inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
+							<srgIn>org.spigotmc:minecraft-server:1.20.2-R0.1-SNAPSHOT:csrg:maps-spigot</srgIn>
+							<remappedDependencies>org.spigotmc:spigot:1.20.2-R0.1-SNAPSHOT:jar:remapped-obf</remappedDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -108,8 +136,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			

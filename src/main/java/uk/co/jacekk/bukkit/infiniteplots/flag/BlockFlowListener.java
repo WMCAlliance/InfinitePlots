@@ -29,11 +29,11 @@ public class BlockFlowListener extends BaseListener<InfinitePlots> {
 			
 			Material type = event.getBlock().getType();
 			
-			if (type == Material.WATER || type == Material.STATIONARY_WATER){
+			if (type == Material.WATER || type == Material.LEGACY_STATIONARY_WATER){
 				if (!plot.isFlagEnabled(PlotFlag.WATER_FLOW)){
 					event.setCancelled(true);
 				}
-			}else if (type == Material.LAVA || type == Material.STATIONARY_LAVA){
+			}else if (type == Material.LAVA || type == Material.LEGACY_STATIONARY_LAVA){
 				if (!plot.isFlagEnabled(PlotFlag.LAVA_FLOW)){
 					event.setCancelled(true);
 				}

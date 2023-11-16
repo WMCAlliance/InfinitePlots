@@ -2,24 +2,26 @@ package uk.co.jacekk.bukkit.infiniteplots.plot.decorator;
 
 import java.util.Arrays;
 import java.util.Random;
+import net.minecraft.server.level.ServerLevel;
 
-import net.minecraft.server.v1_9_R1.BiomeBase;
-import net.minecraft.server.v1_9_R1.Block;
-import net.minecraft.server.v1_9_R1.BlockPosition;
-import net.minecraft.server.v1_9_R1.BlockSand;
+import net.minecraft.block.SandBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.packs.resources.ResourceProvider;
+
 import net.minecraft.server.v1_9_R1.ChunkProviderGenerate;
-import net.minecraft.server.v1_9_R1.ChunkSnapshot;
-import net.minecraft.server.v1_9_R1.IBlockData;
-import net.minecraft.server.v1_9_R1.IChunkProvider;
-import net.minecraft.server.v1_9_R1.MinecraftKey;
-import net.minecraft.server.v1_9_R1.World;
-import net.minecraft.server.v1_9_R1.WorldGenCanyon;
-import net.minecraft.server.v1_9_R1.WorldGenCaves;
-import net.minecraft.server.v1_9_R1.WorldServer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SandBlock;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.ProtoChunk;
+import net.minecraft.world.level.levelgen.carver.CanyonWorldCarver;
+import net.minecraft.world.level.levelgen.carver.CaveWorldCarver;
+import org.bukkit.ChunkSnapshot;
 
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_20_R2.CraftWorld;
 
 import uk.co.jacekk.bukkit.baseplugin.util.ReflectionUtils;
 import uk.co.jacekk.bukkit.infiniteplots.BlockChangeTask;
@@ -34,7 +36,7 @@ import uk.co.jacekk.bukkit.infiniteplots.plot.Plot;
 public class BiomePlotDecorator extends PlotDecorator {
 	
 	private Biome biome;
-	private BiomeBase biomeBase;
+	private net.minecraft.world.level.biome.Biome biomeBase;
 	private long seed;
 	
 	public BiomePlotDecorator(InfinitePlots plugin, Biome biome){
@@ -43,20 +45,20 @@ public class BiomePlotDecorator extends PlotDecorator {
 		this.biome = biome;
 		this.seed = (new Random()).nextLong();
 		
-		this.biomeBase = BiomeBase.REGISTRY_ID.get(new MinecraftKey(biome.name().toLowerCase()));
+		this.biomeBase = BiomeBase.REGISTRY_ID.get(new ResourceProvider(biome.name().toLowerCase()));
 	}
 	
-	private ChunkSnapshot createChunk(ChunkProviderGenerate generator, World world, int x, int z, BiomeBase biomeBase){
-		ChunkSnapshot chunk = new ChunkSnapshot();
-		BiomeBase[] biomeBases = new BiomeBase[256];
+	private ProtoChunk createChunk(OverworldLevelSource generator, Level world, int x, int z, net.minecraft.world.level.biome.Biome biomeBase){
+		ProtoChunk chunk = new ProtoChunk();
+		net.minecraft.world.level.biome.Biome[] biomeBases = new net.minecraft.world.level.biome.Biome[256];
 		Arrays.fill(biomeBases, biomeBase);
 		
 		generator.a(x, z, chunk);
 		generator.a(x, z, chunk, biomeBases);
 		
 		try{
-			ReflectionUtils.getFieldValue(ChunkProviderGenerate.class, "v", WorldGenCaves.class, generator).a(world, x, z, chunk);
-			ReflectionUtils.getFieldValue(ChunkProviderGenerate.class, "A", WorldGenCanyon.class, generator).a(world, x, z, chunk);
+			ReflectionUtils.getFieldValue(ChunkProviderGenerate.class, "v", CaveWorldCarver.class, generator).a(world, x, z, chunk);
+			ReflectionUtils.getFieldValue(ChunkProviderGenerate.class, "A", CanyonWorldCarver.class, generator).a(world, x, z, chunk);
 		}catch (NoSuchFieldException e){
 			e.printStackTrace();
 		}
@@ -67,7 +69,7 @@ public class BiomePlotDecorator extends PlotDecorator {
 	@Override
 	public void decorate(Plot plot){
 		CraftWorld craftWorld = (CraftWorld) plugin.getServer().getWorld(plot.getLocation().getWorldName());
-		final WorldServer world = craftWorld.getHandle();
+		final ServerLevel world = craftWorld.getHandle();
 		final ChunkProviderGenerate generator = new ChunkProviderGenerate(world, this.seed, false, "");
 		
 		int worldHeight = craftWorld.getMaxHeight();
@@ -93,10 +95,11 @@ public class BiomePlotDecorator extends PlotDecorator {
 								int wy = y - (seaHeight - gridHeight);
 								
 								if (wy > 0 && wy < worldHeight){
-									IBlockData blockData = chunk.a(cx, y, cz);
+									BlockData blockData = chunk.getBlockData(cx, y, cz);
 									
 									//TODO: How do we do this without the ID?
-									Material type = Material.getMaterial(Block.REGISTRY_ID.getId(blockData));
+									
+									Material type = blockData.getMaterial();
 									
 									if (blockData == null){
 										type = Material.AIR;
@@ -113,7 +116,7 @@ public class BiomePlotDecorator extends PlotDecorator {
 			}
 		}
 		
-		BlockSand.instaFall = true;
+		SandBlock.instaFall = true;
 		
 		task.start(plugin.config.getInt(Config.RESET_DELAY), plugin.config.getInt(Config.RESET_PERTICK));
 		
@@ -121,7 +124,7 @@ public class BiomePlotDecorator extends PlotDecorator {
 			
 			@Override
 			public void run(){
-				IChunkProvider currentChunkProvider = world.getChunkProvider();
+				ChunkSource currentChunkProvider = world.getChunkSource();
 				
 				try{
 					ChunkProviderWrapper wrappedChunkProvider = new ChunkProviderWrapper(currentChunkProvider, buildLimits);
@@ -130,7 +133,7 @@ public class BiomePlotDecorator extends PlotDecorator {
 
 					for (int x = buildLimits[0]; x <= buildLimits[2]; x += 16){
 						for (int z = buildLimits[1]; z <= buildLimits[3]; z += 16){
-							biomeBase.a(world, random, new BlockPosition((x >> 4) * 16, 0, (z >> 4) * 16));
+							biomeBase.a(world, random, new BlockPos((x >> 4) * 16, 0, (z >> 4) * 16));
 						}
 					}
 					

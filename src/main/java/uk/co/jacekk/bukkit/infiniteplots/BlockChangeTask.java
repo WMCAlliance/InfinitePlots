@@ -159,15 +159,13 @@ public class BlockChangeTask extends BaseTask<InfinitePlots> {
 		Iterator<Entry<Block, Material>> materialIterator = this.materials.entrySet().iterator();
 		Iterator<Entry<Block, Byte>> dataIterator = this.dataValues.entrySet().iterator();
 		
-		for (int i = 0; i < this.perTick && materialIterator.hasNext() && dataIterator.hasNext(); ++i){
+		for (int i = 0; i < this.perTick && materialIterator.hasNext(); ++i){
 			Entry<Block, Material> materialEntry = materialIterator.next();
-			Entry<Block, Byte> dataEntry = dataIterator.next();
 			
 			materialIterator.remove();
 			dataIterator.remove();
 			
 			materialEntry.getKey().setType(materialEntry.getValue());
-			dataEntry.getKey().setData(dataEntry.getValue());
 		}
 		
 		if (this.materials.isEmpty() || this.dataValues.isEmpty()){

@@ -7,9 +7,10 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Biome;
+import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
 
 /**
  * Responsible for building the ground of a world 
@@ -19,25 +20,19 @@ public class PlotsGenerator extends ChunkGenerator {
 	private int size;
 	private int height;
 	
-	private byte pathId;
-	private byte pathData;
-	private byte wallLowerId;
-	private byte wallLowerData;
-	private byte wallUpperId;
-	private byte wallUpperData;
-	private byte surfaceId;
-	private byte groundId;
+	private Material pathId;
+	private Material wallLowerId;
+	private Material wallUpperId;
+	private Material surfaceId;
+	private Material groundId;
 	
-	public PlotsGenerator(int size, int height, byte pathId, byte pathData, byte wallLowerId, byte wallLowerData, byte wallUpperId, byte wallUpperData, byte surfaceId, byte groundId){
+	public PlotsGenerator(int size, int height, Material pathId, Material wallLowerId, Material wallUpperId, Material surfaceId, Material groundId){
 		this.size = size;
 		this.height = height;
 		
 		this.pathId = pathId;
-		this.pathData = pathData;
 		this.wallLowerId = wallLowerId;
-		this.wallLowerData = wallLowerData;
 		this.wallUpperId = wallUpperId;
-		this.wallUpperData = wallUpperData;
 		this.surfaceId = surfaceId;
 		this.groundId = groundId;
 	}
@@ -52,10 +47,15 @@ public class PlotsGenerator extends ChunkGenerator {
 	}
 	
 	@Override
+	public BiomeProvider getDefaultBiomeProvider(WorldInfo worldInfo) {
+		return new PlainsBiomeProvider();
+	}
+	
+	@Override
 	public List<BlockPopulator> getDefaultPopulators(World world){
-		ArrayList<BlockPopulator> populators = new ArrayList<BlockPopulator>();
+		ArrayList<BlockPopulator> populators = new ArrayList<>();
 		
-		populators.add(new PathPopulator(this.size, this.height, this.pathId, this.pathData, this.wallLowerId, this.wallLowerData, this.wallUpperId, this.wallUpperData));
+		populators.add(new PathPopulator(this.size, this.height, this.pathId, this.wallLowerId, this.wallUpperId));
 		
 		return populators;
 	}
@@ -65,29 +65,22 @@ public class PlotsGenerator extends ChunkGenerator {
 		return new Location(world, 0, this.height + 1, 0);
 	}
 	
-	private void setBlockAt(byte[][] chunk, int x, int y, int z, byte typeId){
-		chunk[y >> 4][((y & 0xF) << 8) | (z << 4) | x] = typeId;
-	}
-	
 	@Override
-	public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomes){
-		byte[][] chunk = new byte[8][4096];
-		
+	public void generateNoise(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
 		for (int x = 0; x < 16; ++x){
 			for (int z = 0; z < 16; ++z){
-				this.setBlockAt(chunk, x, 0, z, (byte) Material.BEDROCK.getId());
+				chunkData.setBlock(x, 0, z, Material.BEDROCK);
 				
 				for (int y = 1; y < this.height; ++y){
-					this.setBlockAt(chunk, x, y, z, this.groundId);
+					chunkData.setBlock(x, y, z, this.groundId);
 				}
 				
-				this.setBlockAt(chunk, x, this.height, z, this.surfaceId);
+				chunkData.setBlock(x, this.height, z, this.surfaceId);
 				
-				biomes.setBiome(x, z, Biome.PLAINS);
+				// TODO Set biome to plains
+				//biomes.setBiome(x, z, Biome.PLAINS);
 			}
 		}
-		
-		return chunk;
 	}
 	
 }

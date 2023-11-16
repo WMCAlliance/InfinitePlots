@@ -3,6 +3,7 @@ package uk.co.jacekk.bukkit.infiniteplots;
 import java.io.File;
 
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Material;
 
 import org.bukkit.World;
 import org.bukkit.generator.ChunkGenerator;
@@ -64,8 +65,6 @@ public class InfinitePlots extends BasePlugin {
 			
 			this.getPermissionManager().registerPermissions(Permission.class);
 			
-			this.getServer().getPluginManager().registerEvents(new WorldInitListener(this), this);
-			
 			this.getServer().getPluginManager().registerEvents(new BuildListener(this), this);
 			this.getServer().getPluginManager().registerEvents(new EnterListener(this), this);
 			
@@ -123,16 +122,13 @@ public class InfinitePlots extends BasePlugin {
 		
 		int height = this.config.getInt(Config.GRID_HEIGHT);
 		
-		byte pathId = (byte) this.config.getInt(Config.BLOCKS_PATH);
-		byte pathData = (byte) this.config.getInt(Config.BLOCKS_PATH_DATA);
-		byte wallLowerId = (byte) this.config.getInt(Config.BLOCKS_LOWER_WALL);
-		byte wallLowerData = (byte) this.config.getInt(Config.BLOCKS_LOWER_WALL_DATA);
-		byte wallUpperId = (byte) this.config.getInt(Config.BLOCKS_UPPER_WALL);
-		byte wallUpperData = (byte) this.config.getInt(Config.BLOCKS_UPPER_WALL_DATA);
-		byte surfaceId = (byte) this.config.getInt(Config.BLOCKS_SURFACE);
-		byte groundId = (byte) this.config.getInt(Config.BLOCKS_GROUND);
+		String pathId = this.config.getString(Config.BLOCKS_PATH);
+		String wallLowerId = this.config.getString(Config.BLOCKS_LOWER_WALL);
+		String wallUpperId = this.config.getString(Config.BLOCKS_UPPER_WALL);
+		String surfaceId = this.config.getString(Config.BLOCKS_SURFACE);
+		String groundId = this.config.getString(Config.BLOCKS_GROUND);
 		
-		return new PlotsGenerator(size, height, pathId, pathData, wallLowerId, wallLowerData, wallUpperId, wallUpperData, surfaceId, groundId);
+		return new PlotsGenerator(size, height, Material.getMaterial(pathId), Material.getMaterial(wallLowerId), Material.getMaterial(wallUpperId), Material.getMaterial(surfaceId), Material.getMaterial(groundId));
 	}
 	
 	public static InfinitePlots getInstance(){
